@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Supervisório Web com MQTT.js</title>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+</head>
+<body>
+  <h1>Supervisório Web</h1>
+  <p>Status da Conexão: <span id="status">Desconectado</span></p>
+  <p>Última mensagem: <span id="message">Nenhuma</span></p>
+
+  <script>
+    // Configurações do broker HiveMQ Cloud
+    const brokerUrl = 'wss://6d14fe43c97d4dee8dbc1f1a02fd08f8.s1.eu.hivemq.cloud:8884/mqtt'; // WSS seguro
+    const options = {
+      username: 'Leandro', // Substitua pelo seu usuário HiveMQ Cloud
+      password: 'Eduardooliveira160511,
+      connectTimeout: 4000,
+      reconnectPeriod: 4000
+    };
+
+    // Conectando ao broker MQTT
+    const client = mqtt.connect(brokerUrl, options);
+
+    // Atualiza status da conexão
+    const statusEl = document.getElementById('status');
+    const messageEl = document.getElementById('message');
+
+    client.on('connect', () => {
+      statusEl.textContent = 'Conectado';
+      console.log('Conectado ao broker MQTT');
+
+      // Se inscreve em um tópico (substitua pelo seu tópico!)
+      client.subscribe('meu/topico', (err) => {
+        if (!err) {
+          console.log('Inscrito no tópico meu/topico');
+        }
+      });
+    });
+
+    client.on('message', (topic, message) => {
+      console.log(`Mensagem recebida no tópico ${topic}: ${message.toString()}`);
+      messageEl.textContent = message.toString();
+    });
+
+    client.on('error', (err) => {
+      console.error('Erro: ', err);
+      statusEl.textContent = 'Erro na conexão';
+    });
+
+    client.on('reconnect', () => {
+      console.log('Tentando reconectar...');
+      statusEl.textContent = 'Reconectando...';
+    });
+
+    client.on('close', () => {
+      console.log('Conexão fechada');
+      statusEl.textContent = 'Desconectado';
+    });
+  </script>
+</body>
+</html>
